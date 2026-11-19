@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 96 15% 7%;
+    --foreground: 90 20% 96%;
+    --card: 96 14% 10%;
+    --card-foreground: 90 20% 96%;
+    --primary: 95 34% 42%;
+    --primary-foreground: 90 25% 98%;
+    --secondary: 96 14% 16%;
+    --secondary-foreground: 90 20% 96%;
+    --muted: 96 12% 14%;
+    --muted-foreground: 92 10% 66%;
+    --accent: 95 28% 22%;
+    --accent-foreground: 90 20% 96%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 96 14% 19%;
+    --input: 96 14% 18%;
+    --ring: 95 34% 45%;
+    --radius: 0.75rem;
+  }
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* Overthinker Studio AP3-style static pill buttons */
+.ot-pill {
+  height: 36px;
+  border-radius: 999px;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+}

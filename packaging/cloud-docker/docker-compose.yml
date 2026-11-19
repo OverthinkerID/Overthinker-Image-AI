@@ -1,0 +1,48 @@
+services:
+  api:
+    build:
+      context: ../..
+      dockerfile: packaging/cloud-docker/Dockerfile.api
+    container_name: oia-api
+    restart: unless-stopped
+    env_file:
+      - .env.cloud
+    environment:
+      APP_EDITION: SAAS
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: "file:/app/data/dev.db"
+      STORAGE_ROOT: "/app/storage"
+    ports:
+      - "4000:4000"
+    volumes:
+      - oia_db_data:/app/data
+      - oia_storage_data:/app/storage
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:4000/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  web:
+    build:
+      context: ../..
+      dockerfile: packaging/cloud-docker/Dockerfile.web
+      args:
+        NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL:-http://localhost:4000/api/v1}"
+    container_name: oia-web
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  oia_db_data:
+  oia_storage_data:

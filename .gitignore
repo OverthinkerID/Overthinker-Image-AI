@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+dist/
+out/
+build/
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Databases & Journals
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# Certificates & Keys
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+
+# Runtime Storage & Backups
+storage/*
+!storage/.gitkeep
+
+# Release Packaging Artifacts
+release-artifacts/
+*.zip
+SHA256SUMS.txt
+
+# Logs & OS Files
+logs/
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db

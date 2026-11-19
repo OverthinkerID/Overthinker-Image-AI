@@ -1,0 +1,9 @@
+# Reverse Proxy & TLS Example (replace localhost with your production domain)
+localhost {
+  handle /api/* {
+    reverse_proxy api:4000
+  }
+  handle {
+    reverse_proxy web:3000
+  }
+}

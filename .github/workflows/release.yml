@@ -1,0 +1,57 @@
+name: Release Packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release version tag (e.g. v1.0.0-rc.1 or v1.0.0)'
+        required: true
+        default: 'v1.0.0-rc.1'
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  package-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install & build
+        run: |
+          npm ci
+          npm run db:generate
+          npm run build --workspace=apps/api
+          npm run test --workspace=apps/api
+          npm run build --workspace=apps/web
+
+      - name: Build Local & Cloud release ZIPs + SHA256SUMS
+        env:
+          TAG: ${{ github.event.inputs.release_tag || github.ref_name }}
+        run: |
+          mkdir -p release-artifacts
+          mkdir -p /tmp/oia-win /tmp/oia-cloud
+          cp -r apps packaging .env.example package.json package-lock.json README.md CHANGELOG.md SECURITY.md docs /tmp/oia-win/
+          cp packaging/local-windows/* /tmp/oia-win/
+          rm -f /tmp/oia-win/apps/api/.env /tmp/oia-win/apps/api/prisma/*.db*
+          (cd /tmp/oia-win && zip -qr "$GITHUB_WORKSPACE/release-artifacts/OIA-Overthinker-Image-AI-${TAG}-Windows-x64.zip" .)
+
+          cp -r apps packaging .env.example package.json package-lock.json README.md CHANGELOG.md SECURITY.md docs /tmp/oia-cloud/
+          rm -f /tmp/oia-cloud/apps/api/.env /tmp/oia-cloud/apps/api/prisma/*.db*
+          (cd /tmp/oia-cloud && zip -qr "$GITHUB_WORKSPACE/release-artifacts/OIA-Overthinker-Image-AI-${TAG}-Cloud-Docker.zip" .)
+
+          (cd release-artifacts && sha256sum *.zip > SHA256SUMS.txt)
+
+      - name: Upload release artifacts (manual approval required before publishing)
+        uses: actions/upload-artifact@v4
+        with:
+          name: oia-release-packages
+          path: release-artifacts/*
+          retention-days: 30

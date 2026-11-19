@@ -1,0 +1,3032 @@
+// Prisma Schema for Overthinker Image AI (Phases 1 - 6)
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  workspaceId String?
+  name        String
+  slug        String   @unique
+  description String?
+  industry    String?
+  status      String   @default("DRAFT")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace          Workspace?          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  logos              LogoAsset[]
+  analyses           BrandAnalysis[]
+  brandDnas          BrandDna[]
+  concepts           BrandConcept[]
+  aiJobs             AiJob[]
+  brandAssets        BrandAsset[]
+  logoVariations     LogoVariation[]
+  colorSystems       ColorSystem[]
+  typographySystems  TypographySystem[]
+  graphicElements    GraphicElement[]
+  designTemplates    DesignTemplate[]
+  designDocuments    DesignDocument[]
+  assetExports       AssetExport[]
+  mockupTemplates    MockupTemplate[]
+  mockupDocuments    MockupDocument[]
+  mockupRenderJobs   MockupRenderJob[]
+  brandGuidelines    BrandGuideline[]
+  brandPresentations BrandPresentation[]
+  automationWorkflows AutomationWorkflow[]
+  batchJobs          BatchGenerationJob[]
+  qualityReports     QualityReport[]
+  consistencyReports ConsistencyReport[]
+  assetApprovals     AssetApproval[]
+  exportPackages     ExportPackage[]
+  clientProjects     ClientProject[]
+  clientPortalAccess ClientPortalAccess[]
+  comments           ProjectComment[]
+  creativeSessions   CreativeSession[]
+  creativeAssessments CreativeAssessment[]
+  designCriticReports DesignCriticReport[]
+  brandConsistencyReports BrandConsistencyReport[]
+  creativeRecommendations CreativeRecommendation[]
+  creativeBriefs     CreativeBrief[]
+  brandComparisons   BrandComparison[]
+  assessmentHistory  AssessmentHistory[]
+  intelligenceReports BrandIntelligenceReport[]
+  imageEditingProjects ImageEditingProject[]
+  imageEditingWorkflows ImageEditingWorkflow[]
+  marketResearchProjects MarketResearchProject[]
+  competitors            Competitor[]
+  audienceSegments       AudienceSegment[]
+  customerPersonas       CustomerPersona[]
+  customerJourneys       CustomerJourney[]
+  brandPositionings      BrandPositioning[]
+  namingCandidates       BrandNamingCandidate[]
+  taglineCandidates      BrandTaglineCandidate[]
+  strategyReports        BrandStrategyReport[]
+  strategyRecommendations StrategyRecommendation[]
+  marketingProjects      MarketingProject[]
+  marketingStrategies    MarketingStrategy[]
+  marketingCampaigns     MarketingCampaign[]
+  contentPillars         ContentPillar[]
+  contentIdeas           ContentIdea[]
+  marketingContents      MarketingContent[]
+  contentCalendars       ContentCalendar[]
+  publishingAccounts     PublishingAccount[]
+  publishingJobs         PublishingJob[]
+  adCampaigns            AdCampaign[]
+  landingPages           LandingPage[]
+  marketingAnalytics     MarketingAnalytics[]
+  marketingReports       MarketingReport[]
+  marketingRecommendations MarketingRecommendation[]
+  platformConnections    PlatformConnection[]
+  videoProjects          VideoProject[]
+  videoScripts           VideoScript[]
+  videoStoryboards       VideoStoryboard[]
+  videoGenerationJobs    VideoGenerationJob[]
+  videoAssets            VideoAsset[]
+  videoTimelines         VideoTimeline[]
+  videoAudioAssets       VideoAudioAsset[]
+  voiceProfiles          VoiceProfile[]
+  videoRenderJobs        VideoRenderJob[]
+  videoExportProfiles    VideoExportProfile[]
+  videoQualityReports    VideoQualityReport[]
+
+  @@index([workspaceId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model LogoAsset {
+  id               String   @id @default(cuid())
+  projectId        String
+  originalFilename String
+  storedFilename   String
+  storagePath      String   @unique
+  mimeType         String
+  fileSize         Int
+  sha256           String
+  width            Int?
+  height           Int?
+  isOriginal       Boolean  @default(true)
+  isPrimary        Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  project          Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  analyses         BrandAnalysis[]
+  logoVariations   LogoVariation[]
+
+  @@index([projectId])
+  @@index([sha256])
+}
+
+model BrandAnalysis {
+  id                 String   @id @default(cuid())
+  projectId          String
+  logoId             String
+  format             String
+  width              Int
+  height             Int
+  aspectRatio        String
+  aspectLabel        String
+  hasTransparency    Boolean  @default(false)
+  transparencyRatio  Float    @default(0)
+  backgroundType     String   @default("UNKNOWN")
+  backgroundHex      String?
+  isMonochrome       Boolean  @default(false)
+  colorCount         Int      @default(0)
+  shapeStyle         String   @default("geometric")
+  visualElementsJson String   @default("[]")
+  extractedText      String?
+  hasText            Boolean  @default(false)
+  ocrConfidence      Float    @default(0)
+  rawAnalysisJson    String   @default("{}")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  project            Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  logo               LogoAsset  @relation(fields: [logoId], references: [id], onDelete: Cascade)
+  brandDnas          BrandDna[]
+
+  @@index([projectId])
+  @@index([logoId])
+  @@map("brand_analysis")
+}
+
+model BrandDna {
+  id                      String    @id @default(cuid())
+  projectId               String
+  analysisId              String?
+  version                 Int       @default(1)
+  brandName               String
+  industry                String?
+  brandDescription        String?
+  logoCharacteristicsJson String    @default("{}")
+  visualDirection         String?
+  designRulesJson         String    @default("[]")
+  status                  String    @default("DRAFT")
+  isApproved              Boolean   @default(false)
+  approvedAt              DateTime?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  project           Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  analysis          BrandAnalysis?     @relation(fields: [analysisId], references: [id], onDelete: SetNull)
+  colors            BrandColor[]
+  typography        BrandTypography?
+  personality       BrandPersonality?
+  concepts          BrandConcept[]
+  aiJobs            AiJob[]
+  colorSystems      ColorSystem[]
+  typographySystems TypographySystem[]
+
+  @@unique([projectId, version])
+  @@index([projectId, status])
+  @@map("brand_dna")
+}
+
+model BrandColor {
+  id         String   @id @default(cuid())
+  brandDnaId String
+  role       String
+  name       String?
+  hex        String
+  rgb        String
+  hsl        String
+  dominance  Float    @default(0)
+  isEdited   Boolean  @default(false)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  brandDna   BrandDna @relation(fields: [brandDnaId], references: [id], onDelete: Cascade)
+
+  @@index([brandDnaId, role])
+  @@map("brand_colors")
+}
+
+model BrandTypography {
+  id                       String   @id @default(cuid())
+  brandDnaId               String   @unique
+  extractedText            String?
+  detectedStyle            String   @default("unknown")
+  identificationConfidence Float    @default(0)
+  confidenceNote           String
+  headingFont              String
+  bodyFont                 String
+  headingFallback          String
+  bodyFallback             String
+  isManualOverride         Boolean  @default(false)
+  recommendationsJson      String   @default("[]")
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  brandDna                 BrandDna @relation(fields: [brandDnaId], references: [id], onDelete: Cascade)
+
+  @@map("brand_typography")
+}
+
+model BrandPersonality {
+  id                        String   @id @default(cuid())
+  brandDnaId                String   @unique
+  personalityTraitsJson     String   @default("[]")
+  visualStyle               String
+  targetAudience            String
+  industry                  String
+  brandPositioning          String
+  brandTone                 String
+  designRecommendationsJson String   @default("[]")
+  providerType              String   @default("heuristic")
+  modelName                 String?
+  isEdited                  Boolean  @default(false)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  brandDna                  BrandDna @relation(fields: [brandDnaId], references: [id], onDelete: Cascade)
+
+  @@map("brand_personality")
+}
+
+model AiProviderConfig {
+  id            String    @id @default(cuid())
+  name          String
+  mode          String    @default("HYBRID")
+  providerType  String    @unique
+  baseUrl       String?
+  defaultModel  String?
+  apiKeyRef     String?
+  hasApiKey     Boolean   @default(false)
+  settingsJson  String    @default("{}")
+  isActive      Boolean   @default(true)
+  healthStatus  String    @default("UNKNOWN")
+  lastCheckedAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("ai_provider_configs")
+}
+
+model ComfyWorkflowTemplate {
+  id                String   @id @default(cuid())
+  name              String   @unique
+  category          String
+  version           String   @default("1.0.0")
+  description       String?
+  workflowJson      String
+  defaultParamsJson String   @default("{}")
+  isDefault         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("comfyui_workflows")
+}
+
+model BrandConcept {
+  id                       String    @id @default(cuid())
+  projectId                String
+  brandDnaId               String
+  categoryKey              String
+  conceptName              String
+  description              String
+  visualDirection          String
+  moodboardJson            String    @default("{}")
+  colorPaletteJson         String    @default("[]")
+  typographyJson           String    @default("{}")
+  logoApplicationDirection String
+  graphicElementsJson      String    @default("[]")
+  mockupPreviewsJson       String    @default("[]")
+  promptUsed               String
+  isFavorite               Boolean   @default(false)
+  isPrimary                Boolean   @default(false)
+  isApproved               Boolean   @default(false)
+  isLocked                 Boolean   @default(false)
+  approvedAt               DateTime?
+  currentVersion           Int       @default(1)
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  project            Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  brandDna           BrandDna            @relation(fields: [brandDnaId], references: [id], onDelete: Cascade)
+  revisions          ConceptRevision[]
+  aiJobs             AiJob[]
+  brandAssets        BrandAsset[]
+  logoVariations     LogoVariation[]
+  colorSystems       ColorSystem[]
+  typographySystems  TypographySystem[]
+  graphicElements    GraphicElement[]
+  designDocuments    DesignDocument[]
+  mockupDocuments    MockupDocument[]
+  brandGuidelines    BrandGuideline[]
+  brandPresentations BrandPresentation[]
+
+  @@index([projectId, categoryKey])
+  @@index([brandDnaId])
+  @@map("brand_concepts")
+}
+
+model ConceptRevision {
+  id                 String   @id @default(cuid())
+  conceptId          String
+  version            Int
+  conceptName        String
+  description        String
+  visualDirection    String
+  colorPaletteJson   String   @default("[]")
+  typographyJson     String   @default("{}")
+  mockupPreviewsJson String   @default("[]")
+  revisionNote       String?
+  promptUsed         String?
+  createdAt          DateTime @default(now())
+
+  concept            BrandConcept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+
+  @@unique([conceptId, version])
+  @@map("concept_revisions")
+}
+
+model AiJob {
+  id              String    @id @default(cuid())
+  projectId       String
+  brandDnaId      String?
+  conceptId       String?
+  jobType         String
+  status          String    @default("QUEUED")
+  progress        Int       @default(0)
+  provider        String
+  model           String?
+  prompt          String
+  workflowId      String?
+  workflowVersion String?
+  parametersJson  String    @default("{}")
+  outputRefsJson  String    @default("[]")
+  errorMessage    String?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  project         Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  brandDna        BrandDna?     @relation(fields: [brandDnaId], references: [id], onDelete: SetNull)
+  concept         BrandConcept? @relation(fields: [conceptId], references: [id], onDelete: SetNull)
+
+  @@index([projectId, status])
+  @@index([conceptId])
+  @@map("ai_jobs")
+}
+
+model BrandAsset {
+  id           String   @id @default(cuid())
+  projectId    String
+  conceptId    String?
+  name         String
+  category     String
+  assetType    String
+  storagePath  String
+  mimeType     String
+  width        Int?
+  height       Int?
+  version      Int      @default(1)
+  aiProvider   String   @default("manual")
+  status       String   @default("READY")
+  isApproved   Boolean  @default(false)
+  isLocked     Boolean  @default(false)
+  metadataJson String   @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  project         Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  concept         BrandConcept?    @relation(fields: [conceptId], references: [id], onDelete: SetNull)
+  mockupDocuments MockupDocument[]
+
+  @@index([projectId, category])
+  @@index([conceptId])
+  @@map("brand_assets")
+}
+
+model LogoVariation {
+  id            String   @id @default(cuid())
+  projectId     String
+  parentLogoId  String?
+  conceptId     String?
+  variationType String
+  name          String
+  format        String
+  storagePath   String
+  svgContent    String?
+  width         Int      @default(512)
+  height        Int      @default(512)
+  version       Int      @default(1)
+  isEdited      Boolean  @default(false)
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  project       Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parentLogo    LogoAsset?    @relation(fields: [parentLogoId], references: [id], onDelete: SetNull)
+  concept       BrandConcept? @relation(fields: [conceptId], references: [id], onDelete: SetNull)
+
+  @@index([projectId, variationType])
+  @@map("logo_variations")
+}
+
+model ColorSystem {
+  id           String   @id @default(cuid())
+  projectId    String
+  brandDnaId   String?
+  conceptId    String?
+  name         String   @default("Brand Color System")
+  version      Int      @default(1)
+  palettesJson String   @default("{}")
+  contrastJson String   @default("[]")
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  brandDna     BrandDna?     @relation(fields: [brandDnaId], references: [id], onDelete: SetNull)
+  concept      BrandConcept? @relation(fields: [conceptId], references: [id], onDelete: SetNull)
+
+  @@index([projectId, version])
+  @@map("color_systems")
+}
+
+model TypographySystem {
+  id              String   @id @default(cuid())
+  projectId       String
+  brandDnaId      String?
+  conceptId       String?
+  name            String   @default("Brand Typography System")
+  version         Int      @default(1)
+  rolesJson       String   @default("{}")
+  customFontsJson String   @default("[]")
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  project         Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  brandDna        BrandDna?     @relation(fields: [brandDnaId], references: [id], onDelete: SetNull)
+  concept         BrandConcept? @relation(fields: [conceptId], references: [id], onDelete: SetNull)
+
+  @@index([projectId, version])
+  @@map("typography_systems")
+}
+
+model GraphicElement {
+  id          String   @id @default(cuid())
+  projectId   String
+  conceptId   String?
+  elementType String
+  name        String
+  format      String   @default("SVG")
+  storagePath String
+  svgContent  String?
+  version     Int      @default(1)
+  aiProvider  String   @default("manual")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  concept     BrandConcept? @relation(fields: [conceptId], references: [id], onDelete: SetNull)
+
+  @@index([projectId, elementType])
+  @@map("graphic_elements")
+}
+
+model DesignTemplate {
+  id          String   @id @default(cuid())
+  projectId   String?
+  category    String
+  templateKey String
+  name        String
+  width       Int
+  height      Int
+  canvasJson  String
+  isCustom    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project     Project?         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  documents   DesignDocument[]
+
+  @@index([category, templateKey])
+  @@map("design_templates")
+}
+
+model DesignDocument {
+  id              String   @id @default(cuid())
+  projectId       String
+  conceptId       String?
+  templateId      String?
+  title           String
+  category        String   @default("CUSTOM")
+  width           Int      @default(1080)
+  height          Int      @default(1080)
+  canvasJson      String
+  currentVersion  Int      @default(1)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  project         Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  concept         BrandConcept?    @relation(fields: [conceptId], references: [id], onDelete: SetNull)
+  template        DesignTemplate?  @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  versions        DesignVersion[]
+  mockupDocuments MockupDocument[]
+
+  @@index([projectId])
+  @@map("design_documents")
+}
+
+model DesignVersion {
+  id         String   @id @default(cuid())
+  documentId String
+  version    Int
+  canvasJson String
+  changeNote String?
+  createdAt  DateTime @default(now())
+
+  document   DesignDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([documentId, version])
+  @@map("design_versions")
+}
+
+model AssetExport {
+  id          String   @id @default(cuid())
+  projectId   String
+  documentId  String?
+  format      String
+  width       Int?
+  height      Int?
+  dpi         Int      @default(72)
+  transparent Boolean  @default(false)
+  storagePath String
+  fileSize    Int
+  createdAt   DateTime @default(now())
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, format])
+  @@map("asset_exports")
+}
+
+model MockupTemplate {
+  id               String   @id @default(cuid())
+  projectId        String?
+  category         String
+  templateKey      String
+  name             String
+  description      String?
+  width            Int      @default(1200)
+  height           Int      @default(900)
+  placementJson    String   @default("{}")
+  capabilitiesJson String   @default("{}")
+  isFavorite       Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  project          Project?         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  mockups          MockupDocument[]
+
+  @@index([category, templateKey])
+  @@map("mockup_templates")
+}
+
+model MockupDocument {
+  id               String   @id @default(cuid())
+  projectId        String
+  templateId       String?
+  conceptId        String?
+  sourceAssetId    String?
+  designDocumentId String?
+  title            String
+  category         String
+  width            Int      @default(1200)
+  height           Int      @default(900)
+  sceneConfigJson  String   @default("{}")
+  renderedPath     String?
+  currentVersion   Int      @default(1)
+  isFavorite       Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  template         MockupTemplate?   @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  concept          BrandConcept?     @relation(fields: [conceptId], references: [id], onDelete: SetNull)
+  sourceAsset      BrandAsset?       @relation(fields: [sourceAssetId], references: [id], onDelete: SetNull)
+  designDocument   DesignDocument?   @relation(fields: [designDocumentId], references: [id], onDelete: SetNull)
+  versions         MockupVersion[]
+  renderJobs       MockupRenderJob[]
+
+  @@index([projectId, category])
+  @@map("mockup_documents")
+}
+
+model MockupVersion {
+  id              String   @id @default(cuid())
+  mockupId        String
+  version         Int
+  sceneConfigJson String
+  renderedPath    String?
+  changeNote      String?
+  createdAt       DateTime @default(now())
+
+  mockup          MockupDocument @relation(fields: [mockupId], references: [id], onDelete: Cascade)
+
+  @@unique([mockupId, version])
+  @@map("mockup_versions")
+}
+
+model MockupRenderJob {
+  id              String    @id @default(cuid())
+  projectId       String
+  mockupId        String?
+  provider        String
+  prompt          String
+  sourceAssetRefs String    @default("[]")
+  status          String    @default("QUEUED")
+  progress        Int       @default(0)
+  outputPath      String?
+  errorMessage    String?
+  createdAt       DateTime  @default(now())
+  completedAt     DateTime?
+
+  project         Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  mockup          MockupDocument? @relation(fields: [mockupId], references: [id], onDelete: SetNull)
+
+  @@index([projectId, status])
+  @@map("mockup_render_jobs")
+}
+
+model BrandGuideline {
+  id               String   @id @default(cuid())
+  projectId        String
+  conceptId        String?
+  title            String
+  layoutConfigJson String   @default("{}")
+  currentVersion   Int      @default(1)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  project          Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  concept          BrandConcept?      @relation(fields: [conceptId], references: [id], onDelete: SetNull)
+  sections         GuidelineSection[]
+  versions         GuidelineVersion[]
+
+  @@index([projectId])
+  @@map("brand_guidelines")
+}
+
+model GuidelineSection {
+  id            String   @id @default(cuid())
+  guidelineId   String
+  sectionKey    String
+  title         String
+  orderIndex    Int
+  content       String
+  imageRefsJson String   @default("[]")
+  layoutType    String   @default("STANDARD")
+  isPlaceholder Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  guideline     BrandGuideline @relation(fields: [guidelineId], references: [id], onDelete: Cascade)
+
+  @@index([guidelineId, orderIndex])
+  @@map("guideline_sections")
+}
+
+model GuidelineVersion {
+  id           String   @id @default(cuid())
+  guidelineId  String
+  version      Int
+  snapshotJson String
+  changeNote   String?
+  createdAt    DateTime @default(now())
+
+  guideline    BrandGuideline @relation(fields: [guidelineId], references: [id], onDelete: Cascade)
+
+  @@unique([guidelineId, version])
+  @@map("guideline_versions")
+}
+
+model BrandPresentation {
+  id             String   @id @default(cuid())
+  projectId      String
+  conceptId      String?
+  title          String
+  aspectRatio    String   @default("16:9")
+  currentVersion Int      @default(1)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  project        Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  concept        BrandConcept?         @relation(fields: [conceptId], references: [id], onDelete: SetNull)
+  slides         PresentationSlide[]
+  versions       PresentationVersion[]
+
+  @@index([projectId])
+  @@map("brand_presentations")
+}
+
+model PresentationSlide {
+  id             String   @id @default(cuid())
+  presentationId String
+  slideType      String
+  title          String
+  subtitle       String?
+  body           String
+  layout         String   @default("SPLIT")
+  imageRefsJson  String   @default("[]")
+  orderIndex     Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  presentation   BrandPresentation @relation(fields: [presentationId], references: [id], onDelete: Cascade)
+
+  @@index([presentationId, orderIndex])
+  @@map("presentation_slides")
+}
+
+model PresentationVersion {
+  id             String   @id @default(cuid())
+  presentationId String
+  version        Int
+  snapshotJson   String
+  changeNote     String?
+  createdAt      DateTime @default(now())
+
+  presentation   BrandPresentation @relation(fields: [presentationId], references: [id], onDelete: Cascade)
+
+  @@unique([presentationId, version])
+  @@map("presentation_versions")
+}
+
+// ==========================================
+// PHASE 6: Automation, Batch, QC & Commercial Export
+// ==========================================
+
+model AutomationWorkflow {
+  id             String    @id @default(cuid())
+  projectId      String
+  name           String
+  mode           String    @default("AUTOMATIC") // AUTOMATIC | SEMI_AUTOMATIC | MANUAL
+  status         String    @default("QUEUED") // QUEUED | RUNNING | WAITING_APPROVAL | PAUSED | COMPLETED | FAILED | CANCELLED
+  configJson     String    @default("{}")
+  currentStepIdx Int       @default(0)
+  startedAt      DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  project        Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  steps          WorkflowStep[]
+  executions     WorkflowExecution[]
+  approvals      WorkflowApproval[]
+
+  @@index([projectId, status])
+  @@map("automation_workflows")
+}
+
+model WorkflowStep {
+  id             String    @id @default(cuid())
+  workflowId     String
+  stepOrder      Int
+  stepKey        String
+  name           String
+  isOptional     Boolean   @default(false)
+  requiresApproval Boolean @default(false)
+  idempotencyKey String    @unique
+  status         String    @default("QUEUED") // QUEUED | RUNNING | WAITING_APPROVAL | COMPLETED | FAILED | SKIPPED | CANCELLED
+  outputJson     String    @default("{}")
+  errorMessage   String?
+  attempts       Int       @default(0)
+  startedAt      DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  workflow       AutomationWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@unique([workflowId, stepOrder])
+  @@map("workflow_steps")
+}
+
+model WorkflowExecution {
+  id         String   @id @default(cuid())
+  workflowId String
+  stepKey    String
+  level      String   @default("INFO") // INFO | WARN | ERROR
+  message    String
+  metaJson   String   @default("{}")
+  createdAt  DateTime @default(now())
+
+  workflow   AutomationWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([workflowId, createdAt])
+  @@map("workflow_executions")
+}
+
+model WorkflowApproval {
+  id         String    @id @default(cuid())
+  workflowId String
+  stepKey    String
+  status     String    @default("PENDING") // PENDING | APPROVED | REJECTED | REVISION_REQUESTED
+  comment    String?
+  decidedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  workflow   AutomationWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([workflowId, status])
+  @@map("workflow_approvals")
+}
+
+model BatchGenerationJob {
+  id               String    @id @default(cuid())
+  projectId        String
+  category         String
+  outputCount      Int       @default(4)
+  width            Int       @default(1080)
+  height           Int       @default(1080)
+  conceptId        String?
+  provider         String    @default("heuristic")
+  model            String?
+  concurrencyLimit Int       @default(1) // Sequential by default to protect local GPU
+  instructions     String?
+  status           String    @default("QUEUED") // QUEUED | RUNNING | COMPLETED | FAILED | CANCELLED
+  progress         Int       @default(0)
+  outputRefsJson   String    @default("[]")
+  errorMessage     String?
+  createdAt        DateTime  @default(now())
+  completedAt      DateTime?
+
+  project          Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, status])
+  @@map("batch_generation_jobs")
+}
+
+model QualityReport {
+  id              String   @id @default(cuid())
+  projectId       String
+  overallScore    Int
+  passed          Boolean
+  checksJson      String   @default("[]")
+  disclaimer      String   @default("Automated quality checks do not guarantee trademark safety or legal compliance.")
+  createdAt       DateTime @default(now())
+
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("quality_reports")
+}
+
+model ConsistencyReport {
+  id               String   @id @default(cuid())
+  projectId        String
+  consistencyScore Int
+  resultsJson      String   @default("[]")
+  warningsJson     String   @default("[]")
+  errorsJson       String   @default("[]")
+  correctionsJson  String   @default("[]")
+  createdAt        DateTime @default(now())
+
+  project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("consistency_reports")
+}
+
+model AssetApproval {
+  id         String   @id @default(cuid())
+  projectId  String
+  targetType String   // BRAND_ASSET | CONCEPT | LOGO_VARIATION | MOCKUP | GUIDELINE
+  targetId   String
+  version    Int      @default(1)
+  status     String   // APPROVED | REJECTED | REVISION_REQUESTED
+  isLocked   Boolean  @default(false)
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, targetId])
+  @@map("asset_approvals")
+}
+
+model ExportPackage {
+  id          String   @id @default(cuid())
+  projectId   String
+  name        String
+  status      String   @default("BUILDING") // BUILDING | COMPLETED | FAILED
+  storagePath String?
+  fileSize    Int      @default(0)
+  manifestJson String  @default("{}")
+  errorMessage String?
+  createdAt   DateTime @default(now())
+
+  project     Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  items       ExportPackageItem[]
+
+  @@index([projectId])
+  @@map("export_packages")
+}
+
+model ExportPackageItem {
+  id           String   @id @default(cuid())
+  packageId    String
+  folderPath   String
+  assetName    String
+  category     String
+  format       String
+  dimensions   String?
+  version      Int      @default(1)
+  sourceConcept String?
+  aiProvider   String?
+  aiModel      String?
+  createdAt    DateTime @default(now())
+
+  pkg          ExportPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@index([packageId])
+  @@map("export_package_items")
+}
+
+// ==========================================
+// PHASE 7: Multi-Workspace, Clients, RBAC, Portal, Collaboration & SaaS Billing
+// ==========================================
+
+model User {
+  id                  String    @id @default(cuid())
+  email               String    @unique
+  passwordHash        String
+  name                String
+  avatarUrl           String?
+  emailVerifiedAt     DateTime?
+  emailVerifyToken    String?
+  twoFactorEnabled    Boolean   @default(false)
+  twoFactorSecret     String?
+  isPlatformAdmin     Boolean   @default(false)
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  sessions            UserSession[]
+  passwordResets      PasswordReset[]
+  ownedWorkspaces     Workspace[]           @relation("WorkspaceOwner")
+  memberships         WorkspaceMember[]
+  sentInvitations     WorkspaceInvitation[] @relation("InvitedBy")
+  clientPortalAccess  ClientPortalAccess[]
+  projectComments     ProjectComment[]
+  assetComments       AssetComment[]
+  activityLogs        ActivityLog[]
+  notifications       Notification[]
+  usageRecords        UsageRecord[]
+  storageObjects      StorageObject[]
+
+  @@map("users")
+}
+
+model UserSession {
+  id                String    @id @default(cuid())
+  userId            String
+  tokenHash         String    @unique
+  userAgent         String?
+  ipAddress         String?
+  activeWorkspaceId String?
+  expiresAt         DateTime
+  revokedAt         DateTime?
+  createdAt         DateTime  @default(now())
+  lastSeenAt        DateTime  @default(now())
+
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@map("user_sessions")
+}
+
+model PasswordReset {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_resets")
+}
+
+model Workspace {
+  id         String   @id @default(cuid())
+  name       String
+  slug       String   @unique
+  type       String   @default("PERSONAL") // PERSONAL | AGENCY | COMPANY | CLIENT
+  logoPath   String?
+  isArchived Boolean  @default(false)
+  ownerId    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  owner              User                  @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members            WorkspaceMember[]
+  invitations        WorkspaceInvitation[]
+  settings           WorkspaceSetting?
+  projects           Project[]
+  clients            Client[]
+  clientProjects     ClientProject[]
+  clientPortalAccess ClientPortalAccess[]
+  projectComments    ProjectComment[]
+  assetComments      AssetComment[]
+  activityLogs       ActivityLog[]
+  notifications      Notification[]
+  subscription       Subscription?
+  billingEvents      BillingEvent[]
+  invoices           Invoice[]
+  usageRecords       UsageRecord[]
+  paymentTxs         PaymentTransaction[]
+  storageObjects     StorageObject[]
+
+  @@index([ownerId])
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id              String   @id @default(cuid())
+  workspaceId     String
+  userId          String
+  role            String   @default("DESIGNER") // OWNER | ADMIN | DESIGNER | REVIEWER | CLIENT
+  permissionsJson String   @default("{}")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  workspace       Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
+  @@map("workspace_members")
+}
+
+model WorkspaceInvitation {
+  id          String    @id @default(cuid())
+  workspaceId String
+  email       String
+  role        String    @default("DESIGNER")
+  tokenHash   String    @unique
+  invitedById String
+  status      String    @default("PENDING") // PENDING | ACCEPTED | REVOKED | EXPIRED
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  invitedBy   User      @relation("InvitedBy", fields: [invitedById], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, status])
+  @@index([email])
+  @@map("workspace_invitations")
+}
+
+model WorkspaceSetting {
+  id                   String   @id @default(cuid())
+  workspaceId          String   @unique
+  aiMode               String   @default("HYBRID")
+  defaultProvider      String   @default("heuristic")
+  allowedProvidersJson String   @default("[]")
+  storageProvider      String   @default("LOCAL")
+  customDomain         String?
+  brandingJson         String   @default("{}")
+  updatedAt            DateTime @updatedAt
+
+  workspace            Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@map("workspace_settings")
+}
+
+model Client {
+  id            String   @id @default(cuid())
+  workspaceId   String
+  name          String
+  companyName   String?
+  contactPerson String?
+  email         String?
+  phone         String?
+  address       String?
+  website       String?
+  industry      String?
+  description   String?
+  internalNotes String?
+  isArchived    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  workspace     Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  contacts      ClientContact[]
+  projects      ClientProject[]
+  portalAccess  ClientPortalAccess[]
+  activityLogs  ActivityLog[]
+
+  @@index([workspaceId, isArchived])
+  @@map("clients")
+}
+
+model ClientContact {
+  id        String   @id @default(cuid())
+  clientId  String
+  name      String
+  role      String?
+  email     String?
+  phone     String?
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@map("client_contacts")
+}
+
+model ClientProject {
+  id          String   @id @default(cuid())
+  workspaceId String
+  clientId    String
+  projectId   String
+  status      String   @default("IN_PROGRESS") // LEAD | BRIEFING | IN_PROGRESS | REVIEW | REVISION | COMPLETED | ARCHIVED
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  client      Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, projectId])
+  @@index([workspaceId, status])
+  @@map("client_projects")
+}
+
+model ClientPortalAccess {
+  id                  String   @id @default(cuid())
+  workspaceId         String
+  clientId            String
+  projectId           String
+  userId              String
+  visibleAssetIdsJson String   @default("[]")
+  allowDownloads      Boolean  @default(true)
+  allowComments       Boolean  @default(true)
+  allowApprovals      Boolean  @default(true)
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  workspace           Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  client              Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  project             Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([workspaceId, userId])
+  @@map("client_portal_access")
+}
+
+model ProjectComment {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  projectId    String
+  authorId     String
+  content      String
+  mentionsJson String   @default("[]")
+  isInternal   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  project      Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  author       User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, projectId])
+  @@map("project_comments")
+}
+
+model AssetComment {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  projectId    String
+  assetType    String   // CONCEPT | BRAND_ASSET | LOGO_VARIATION | MOCKUP | GUIDELINE
+  assetId      String
+  authorId     String
+  content      String
+  mentionsJson String   @default("[]")
+  isInternal   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  author       User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, assetId])
+  @@map("asset_comments")
+}
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  workspaceId String
+  actorId     String?
+  projectId   String?
+  clientId    String?
+  action      String
+  entityType  String
+  entityId    String?
+  summary     String
+  metaJson    String   @default("{}")
+  createdAt   DateTime @default(now())
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  actor       User?     @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  client      Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, createdAt])
+  @@map("activity_logs")
+}
+
+model Notification {
+  id          String    @id @default(cuid())
+  workspaceId String
+  userId      String
+  type        String
+  title       String
+  body        String
+  linkUrl     String?
+  channel     String    @default("IN_APP") // IN_APP | EMAIL
+  isRead      Boolean   @default(false)
+  readAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+model SubscriptionPlan {
+  id                String   @id @default(cuid())
+  code              String   @unique
+  name              String
+  description       String?
+  monthlyPriceCents Int      @default(0)
+  annualPriceCents  Int      @default(0)
+  currency          String   @default("USD")
+  workspaceLimit    Int      @default(1)
+  projectLimit      Int      @default(5)
+  memberLimit       Int      @default(1)
+  aiImageQuota      Int      @default(50)
+  aiTextQuota       Int      @default(200)
+  storageQuotaMb    Int      @default(1024)
+  exportLimit       Int      @default(20)
+  featuresJson      String   @default("{}")
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  subscriptions     Subscription[]
+
+  @@map("subscription_plans")
+}
+
+model Subscription {
+  id                 String    @id @default(cuid())
+  workspaceId        String    @unique
+  planId             String
+  status             String    @default("TRIALING") // TRIALING | ACTIVE | PAST_DUE | CANCELLED | EXPIRED
+  billingCycle       String    @default("MONTHLY") // MONTHLY | ANNUAL
+  trialEndsAt        DateTime?
+  currentPeriodStart DateTime  @default(now())
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean   @default(false)
+  provider           String    @default("NONE")
+  externalSubId      String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  workspace          Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  plan               SubscriptionPlan @relation(fields: [planId], references: [id])
+  invoices           Invoice[]
+
+  @@map("subscriptions")
+}
+
+model BillingEvent {
+  id              String     @id @default(cuid())
+  workspaceId     String?
+  provider        String
+  externalEventId String     @unique
+  eventType       String
+  payloadJson     String     @default("{}")
+  signatureValid  Boolean    @default(false)
+  processedAt     DateTime?
+  createdAt       DateTime   @default(now())
+
+  workspace       Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, createdAt])
+  @@map("billing_events")
+}
+
+model Invoice {
+  id             String    @id @default(cuid())
+  workspaceId    String
+  subscriptionId String?
+  invoiceNumber  String    @unique
+  amountCents    Int
+  currency       String    @default("USD")
+  status         String    @default("OPEN") // DRAFT | OPEN | PAID | VOID
+  periodStart    DateTime?
+  periodEnd      DateTime?
+  paidAt         DateTime?
+  createdAt      DateTime  @default(now())
+
+  workspace      Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  subscription   Subscription?        @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  transactions   PaymentTransaction[]
+
+  @@index([workspaceId, createdAt])
+  @@map("invoices")
+}
+
+model UsageRecord {
+  id          String   @id @default(cuid())
+  workspaceId String
+  projectId   String?
+  userId      String?
+  metric      String   // AI_IMAGE_GEN | AI_TEXT_GEN | CLOUD_API_CALL | LOCAL_AI_CALL | STORAGE_BYTES | EXPORT_OP | WORKFLOW_RUN
+  quantity    Int      @default(1)
+  provider    String?
+  metaJson    String   @default("{}")
+  createdAt   DateTime @default(now())
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, metric, createdAt])
+  @@map("usage_records")
+}
+
+model PaymentTransaction {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  invoiceId    String?
+  provider     String
+  externalTxId String?
+  amountCents  Int
+  currency     String   @default("USD")
+  status       String   @default("PENDING") // PENDING | SUCCEEDED | FAILED | REFUNDED
+  createdAt    DateTime @default(now())
+
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  invoice      Invoice?  @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, createdAt])
+  @@map("payment_transactions")
+}
+
+model StorageObject {
+  id          String   @id @default(cuid())
+  workspaceId String
+  projectId   String?
+  ownerId     String?
+  provider    String   @default("LOCAL") // LOCAL | S3_COMPATIBLE
+  storageKey  String   @unique
+  mimeType    String
+  fileSize    Int
+  isPrivate   Boolean  @default(true)
+  checksum    String?
+  createdAt   DateTime @default(now())
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  owner       User?     @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, projectId])
+  @@map("storage_objects")
+}
+
+// ==========================================
+// PHASE 8: AI Creative Director & Brand Intelligence
+// ==========================================
+
+model CreativeSession {
+  id          String   @id @default(cuid())
+  workspaceId String
+  projectId   String
+  userId      String?
+  title       String   @default("Creative Director Session")
+  provider    String   @default("heuristic")
+  model       String?
+  memoryJson  String   @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project     Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  messages    CreativeMessage[]
+
+  @@index([workspaceId, projectId])
+  @@map("creative_sessions")
+}
+
+model CreativeMessage {
+  id                  String   @id @default(cuid())
+  sessionId           String
+  role                String   // USER | DIRECTOR
+  content             String
+  provider            String   @default("heuristic")
+  model               String?
+  promptVersion       String   @default("cd-v1.0")
+  contextSnapshotJson String   @default("{}")
+  createdAt           DateTime @default(now())
+
+  session             CreativeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+  @@map("creative_messages")
+}
+
+model CreativeAssessment {
+  id                  String   @id @default(cuid())
+  workspaceId         String
+  projectId           String
+  userId              String?
+  assessmentType      String   // LOGO_INTELLIGENCE | DESIGN_CRITIC | BRAND_OVERALL
+  targetType          String
+  targetId            String
+  overallScore        Int?     // Nullable: only populated when sufficient evidence exists
+  isAdvisory          Boolean  @default(true)
+  disclaimer          String   @default("Advisory creative assessment only. Does not predict commercial success or guarantee trademark/legal availability.")
+  provider            String   @default("heuristic")
+  model               String?
+  promptVersion       String   @default("cd-eval-v1.0")
+  scoringCriteriaJson String   @default("{}")
+  createdAt           DateTime @default(now())
+
+  project             Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  categories          AssessmentCategory[]
+  evidence            AssessmentEvidence[]
+
+  @@index([workspaceId, projectId])
+  @@map("creative_assessments")
+}
+
+model AssessmentCategory {
+  id             String   @id @default(cuid())
+  assessmentId   String
+  categoryKey    String
+  label          String
+  score          Int
+  judgmentType   String   @default("DETERMINISTIC") // DETERMINISTIC | AI_SUBJECTIVE
+  explanation    String
+  confidence     Float    @default(0.75)
+  severity       String   @default("INFO") // INFO | MINOR | MAJOR | CRITICAL
+  recommendation String
+  createdAt      DateTime @default(now())
+
+  assessment     CreativeAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@index([assessmentId])
+  @@map("assessment_categories")
+}
+
+model AssessmentEvidence {
+  id              String   @id @default(cuid())
+  assessmentId    String
+  categoryKey     String
+  sourceType      String   // IMAGE_PROCESSING | DESIGN_JSON | BRAND_DNA | VISION_AI
+  assetId         String?
+  assetVersion    Int?
+  measurementJson String   @default("{}")
+  finding         String
+  createdAt       DateTime @default(now())
+
+  assessment      CreativeAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@index([assessmentId])
+  @@map("assessment_evidence")
+}
+
+model DesignCriticReport {
+  id                 String   @id @default(cuid())
+  workspaceId        String
+  projectId          String
+  targetType         String
+  targetId           String
+  overallScore       Int?
+  critiqueJson       String   @default("{}")
+  regionFindingsJson String   @default("[]")
+  provider           String   @default("heuristic")
+  model              String?
+  promptVersion      String   @default("cd-critic-v1.0")
+  createdAt          DateTime @default(now())
+
+  project            Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, projectId])
+  @@map("design_critic_reports")
+}
+
+model BrandConsistencyReport {
+  id                  String   @id @default(cuid())
+  workspaceId         String
+  projectId           String
+  consistencyScore    Int
+  issuesJson          String   @default("[]")
+  recommendationsJson String   @default("[]")
+  createdAt           DateTime @default(now())
+
+  project             Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, projectId])
+  @@map("brand_consistency_reports")
+}
+
+model CreativeRecommendation {
+  id                     String   @id @default(cuid())
+  workspaceId            String
+  projectId              String
+  direction              String
+  title                  String
+  description            String
+  reason                 String
+  expectedImpact         String
+  affectedAssetsJson     String   @default("[]")
+  implementationApproach String
+  priority               String   @default("MEDIUM") // LOW | MEDIUM | HIGH | CRITICAL
+  confidence             Float    @default(0.8)
+  status                 String   @default("PENDING") // PENDING | ACCEPTED | REJECTED | EDITED | SAVED_FOR_LATER
+  editedContent          String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  project                Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, projectId, status])
+  @@map("creative_recommendations")
+}
+
+model CreativeBrief {
+  id          String   @id @default(cuid())
+  workspaceId String
+  projectId   String
+  title       String
+  version     Int      @default(1)
+  briefJson   String   @default("{}")
+  isApproved  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, projectId])
+  @@map("creative_briefs")
+}
+
+model BrandComparison {
+  id               String   @id @default(cuid())
+  workspaceId      String
+  projectId        String
+  comparisonType   String   // CONCEPTS | LOGO_VARIATIONS | COLOR_SYSTEMS | TYPOGRAPHY | DESIGNS | MOCKUPS
+  itemIdsJson      String   @default("[]")
+  criteriaJson     String   @default("{}")
+  evaluationJson   String   @default("{}")
+  aiRecommendation String
+  createdAt        DateTime @default(now())
+
+  project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, projectId])
+  @@map("brand_comparisons")
+}
+
+model AssessmentHistory {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  projectId    String
+  assessmentId String?
+  action       String
+  summary      String
+  snapshotJson String   @default("{}")
+  createdAt    DateTime @default(now())
+
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, projectId, createdAt])
+  @@map("assessment_history")
+}
+
+model BrandIntelligenceReport {
+  id            String   @id @default(cuid())
+  workspaceId   String
+  projectId     String
+  title         String
+  version       Int      @default(1)
+  sectionsJson  String   @default("[]")
+  assetRefsJson String   @default("[]")
+  isEdited      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, projectId])
+  @@map("brand_intelligence_reports")
+}
+
+// ==========================================
+// PHASE 9: Advanced AI Image & Design Editing
+// ==========================================
+
+model ImageEditingProject {
+  id                  String   @id @default(cuid())
+  workspaceId         String
+  projectId           String
+  userId              String?
+  title               String
+  sourceAssetId       String?
+  originalStoragePath String
+  originalMimeType    String
+  originalSha256      String
+  originalWidth       Int
+  originalHeight      Int
+  currentVersion      Int      @default(1)
+  isApprovedLocked    Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  project             Project                 @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  versions            ImageEditingVersion[]
+  masks               ImageMask[]
+  protectedRegions    ProtectedRegion[]
+  jobs                ImageEditingJob[]
+  comparisons         ImageComparison[]
+
+  @@index([workspaceId, projectId])
+  @@map("image_editing_projects")
+}
+
+model ImageEditingVersion {
+  id               String   @id @default(cuid())
+  editingProjectId String
+  version          Int
+  operationType    String   // ORIGINAL | CROP | RESIZE | ROTATE | FLIP | ADJUST | BG_REMOVE | BG_REPLACE | GEN_FILL | OBJECT_REPLACE | UPSCALE | ENHANCE | LOGO_COMPOSITE | RESTORE
+  storagePath      String
+  mimeType         String
+  width            Int
+  height           Int
+  adjustmentsJson  String   @default("{}")
+  changeNote       String?
+  isApproved       Boolean  @default(false)
+  isLocked         Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  editingProject   ImageEditingProject @relation(fields: [editingProjectId], references: [id], onDelete: Cascade)
+
+  @@unique([editingProjectId, version])
+  @@map("image_editing_versions")
+}
+
+model ImageMask {
+  id               String   @id @default(cuid())
+  editingProjectId String
+  name             String
+  maskType         String   @default("EDITABLE") // EDITABLE | PROTECTED
+  geometryJson     String   @default("{}") // Image-coordinate-aware strokes, rects, polygons
+  featherPx        Int      @default(0)
+  inverted         Boolean  @default(false)
+  maskStoragePath  String?
+  width            Int
+  height           Int
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  editingProject   ImageEditingProject @relation(fields: [editingProjectId], references: [id], onDelete: Cascade)
+
+  @@index([editingProjectId])
+  @@map("image_masks")
+}
+
+model ProtectedRegion {
+  id                String   @id @default(cuid())
+  editingProjectId  String
+  regionType        String   // ORIGINAL_LOGO | BRAND_SYMBOL | WORDMARK | PRODUCT_LABEL | TYPOGRAPHY | GRAPHIC_ELEMENT
+  label             String
+  protectedAssetId  String?
+  boundsJson        String   @default("{}") // { x, y, width, height, scale, rotation } in image coordinates
+  isLocked          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  editingProject    ImageEditingProject @relation(fields: [editingProjectId], references: [id], onDelete: Cascade)
+
+  @@index([editingProjectId])
+  @@map("protected_regions")
+}
+
+model ImageEditingJob {
+  id               String    @id @default(cuid())
+  workspaceId      String
+  projectId        String
+  editingProjectId String
+  aiJobId          String?
+  jobType          String    // GEN_FILL | BG_REMOVE | BG_REPLACE | OBJECT_REPLACE | UPSCALE | ENHANCE | BATCH_WORKFLOW
+  provider         String    @default("heuristic")
+  model            String?
+  workflowVersion  String?
+  status           String    @default("QUEUED") // QUEUED | RUNNING | COMPLETED | FAILED | CANCELLED
+  progress         Int       @default(0)
+  maskId           String?
+  outputVersionId  String?
+  errorMessage     String?
+  startedAt        DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime  @default(now())
+
+  editingProject   ImageEditingProject    @relation(fields: [editingProjectId], references: [id], onDelete: Cascade)
+  parameters       ImageEditingParameter?
+
+  @@index([workspaceId, projectId, status])
+  @@map("image_editing_jobs")
+}
+
+model ImageEditingParameter {
+  id             String   @id @default(cuid())
+  jobId          String   @unique
+  prompt         String?
+  negativePrompt String?
+  seed           Int?
+  denoise        Float?
+  upscaleFactor  Int?
+  extraJson      String   @default("{}")
+  createdAt      DateTime @default(now())
+
+  job            ImageEditingJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@map("image_editing_parameters")
+}
+
+model ImageEditingWorkflow {
+  id               String   @id @default(cuid())
+  workspaceId      String
+  projectId        String
+  name             String
+  presetType       String   // BG_REMOVAL | PRODUCT_ENHANCE | GEN_FILL | OBJECT_REPLACE | RESTORATION | BRAND_SAFE_MOCKUP | SOCIAL_PREP | PACKAGING_VIZ | CUSTOM
+  isCustom         Boolean  @default(false)
+  concurrencyLimit Int      @default(1)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  project          Project                    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  steps            ImageEditingWorkflowStep[]
+
+  @@index([workspaceId, projectId])
+  @@map("image_editing_workflows")
+}
+
+model ImageEditingWorkflowStep {
+  id         String   @id @default(cuid())
+  workflowId String
+  stepOrder  Int
+  operation  String
+  paramsJson String   @default("{}")
+
+  workflow   ImageEditingWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@unique([workflowId, stepOrder])
+  @@map("image_editing_workflow_steps")
+}
+
+model ImageComparison {
+  id               String   @id @default(cuid())
+  editingProjectId String
+  beforeVersion    Int
+  afterVersion     Int
+  mode             String   @default("SIDE_BY_SIDE") // SIDE_BY_SIDE | SLIDER | ZOOM
+  notes            String?
+  createdAt        DateTime @default(now())
+
+  editingProject   ImageEditingProject @relation(fields: [editingProjectId], references: [id], onDelete: Cascade)
+
+  @@index([editingProjectId])
+  @@map("image_comparisons")
+}
+
+// ==========================================
+// PHASE 10: Market Research & Brand Strategy Intelligence
+// ==========================================
+
+model MarketResearchProject {
+  id               String    @id @default(cuid())
+  workspaceId      String
+  projectId        String
+  userId           String?
+  brandName        String
+  industry         String
+  country          String?
+  targetRegion     String?
+  productType      String?
+  targetMarket     String?
+  priceRange       String?
+  businessDesc     String?
+  researchGoal     String?
+  status           String    @default("DRAFT") // DRAFT | RUNNING | COMPLETED | FAILED
+  provider         String    @default("heuristic")
+  model            String?
+  deletedAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  project          Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sources          MarketResearchSource[]
+  industryAnalyses IndustryAnalysis[]
+  trends           MarketTrend[]
+
+  @@index([workspaceId, projectId, deletedAt])
+  @@map("market_research_projects")
+}
+
+model MarketResearchSource {
+  id                String    @id @default(cuid())
+  workspaceId       String
+  researchProjectId String
+  title             String
+  url               String?
+  publisher         String?
+  publishedAt       String?
+  retrievedAt       DateTime  @default(now())
+  findingCategory   String    @default("AI_ANALYSIS") // VERIFIED_DATA | AI_ANALYSIS | HYPOTHESIS | RECOMMENDATION
+  confidence        Float     @default(0.75)
+  excerpt           String?
+  createdAt         DateTime  @default(now())
+
+  researchProject   MarketResearchProject @relation(fields: [researchProjectId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, researchProjectId])
+  @@map("market_research_sources")
+}
+
+model IndustryAnalysis {
+  id                   String   @id @default(cuid())
+  workspaceId          String
+  researchProjectId    String
+  overview             String
+  characteristicsJson  String   @default("[]")
+  consumerBehavior     String
+  opportunitiesJson    String   @default("[]")
+  challengesJson       String   @default("[]")
+  threatsJson          String   @default("[]")
+  swotJson             String   @default("{}")
+  pestleJson           String   @default("{}")
+  marketGapsJson       String   @default("[]")
+  recommendationsJson  String   @default("[]")
+  provenanceJson       String   @default("{}")
+  provider             String   @default("heuristic")
+  model                String?
+  createdAt            DateTime @default(now())
+
+  researchProject      MarketResearchProject @relation(fields: [researchProjectId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, researchProjectId])
+  @@map("industry_analyses")
+}
+
+model MarketTrend {
+  id                String   @id @default(cuid())
+  workspaceId       String
+  researchProjectId String
+  title             String
+  description       String
+  findingCategory   String   @default("AI_ANALYSIS")
+  confidence        Float    @default(0.75)
+  sourceRef         String?
+  createdAt         DateTime @default(now())
+
+  researchProject   MarketResearchProject @relation(fields: [researchProjectId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, researchProjectId])
+  @@map("market_trends")
+}
+
+model Competitor {
+  id                 String    @id @default(cuid())
+  workspaceId        String
+  projectId          String
+  name               String
+  competitorType     String    @default("DIRECT") // DIRECT | INDIRECT
+  website            String?
+  positioning        String?
+  valueProposition   String?
+  priceTier          String?
+  productsJson       String    @default("[]")
+  strengthsJson      String    @default("[]")
+  weaknessesJson     String    @default("[]")
+  dataProvenance     String    @default("USER_INPUT") // VERIFIED_SOURCE | USER_INPUT | AI_ESTIMATE
+  deletedAt          DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  project            Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  analyses           CompetitorAnalysis[]
+
+  @@index([workspaceId, projectId, deletedAt])
+  @@map("competitors")
+}
+
+model CompetitorAnalysis {
+  id                 String   @id @default(cuid())
+  workspaceId        String
+  competitorId       String
+  visualNotes        String?
+  positioningNotes   String
+  differentiationGap String
+  dataProvenance     String   @default("AI_ESTIMATE")
+  provider           String   @default("heuristic")
+  model              String?
+  createdAt          DateTime @default(now())
+
+  competitor         Competitor @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, competitorId])
+  @@map("competitor_analyses")
+}
+
+model CompetitorComparison {
+  id                  String   @id @default(cuid())
+  workspaceId         String
+  projectId           String
+  competitorIdsJson   String   @default("[]")
+  matrixJson          String   @default("[]")
+  positioningMapJson  String   @default("[]")
+  marketGapsJson      String   @default("[]")
+  createdAt           DateTime @default(now())
+
+  @@index([workspaceId, projectId])
+  @@map("competitor_comparisons")
+}
+
+model AudienceSegment {
+  id               String   @id @default(cuid())
+  workspaceId      String
+  projectId        String
+  name             String
+  demographicJson  String   @default("{}")
+  geographicJson   String   @default("{}")
+  psychographicJson String  @default("{}")
+  behavioralJson   String   @default("{}")
+  needsJson        String   @default("[]")
+  painPointsJson   String   @default("[]")
+  triggersJson     String   @default("[]")
+  dataSourceType   String   @default("AI_HYPOTHESIS") // RESEARCH | USER_INPUT | AI_HYPOTHESIS
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, projectId])
+  @@map("audience_segments")
+}
+
+model CustomerPersona {
+  id                String    @id @default(cuid())
+  workspaceId       String
+  projectId         String
+  personaName       String
+  ageRange          String?
+  location          String?
+  occupation        String?
+  incomeRange       String?
+  lifestyle         String?
+  interestsJson     String    @default("[]")
+  goalsJson         String    @default("[]")
+  painPointsJson    String    @default("[]")
+  needsJson         String    @default("[]")
+  motivationsJson   String    @default("[]")
+  barriersJson      String    @default("[]")
+  channelsJson      String    @default("[]")
+  expectations      String?
+  dataSourceType    String    @default("AI_HYPOTHESIS") // RESEARCH | USER_INPUT | AI_HYPOTHESIS
+  deletedAt         DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  project           Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, projectId, deletedAt])
+  @@map("customer_personas")
+}
+
+model CustomerJourney {
+  id             String   @id @default(cuid())
+  workspaceId    String
+  projectId      String
+  title          String
+  stagesJson     String   @default("[]") // Awareness, Consideration, Decision, Retention, Advocacy
+  dataSourceType String   @default("AI_HYPOTHESIS")
+  createdAt      DateTime @default(now())
+
+  project        Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, projectId])
+  @@map("customer_journeys")
+}
+
+model BrandPositioning {
+  id                   String    @id @default(cuid())
+  workspaceId          String
+  projectId            String
+  brandDnaId           String?
+  version              Int       @default(1)
+  positioningStmt      String
+  uvp                  String
+  usp                  String
+  differentiation      String
+  brandPromise         String
+  brandValuesJson      String    @default("[]")
+  brandPersonality     String
+  brandArchetype       String
+  brandVoice           String
+  keyMessagingJson     String    @default("[]")
+  reasonsToBelieveJson String    @default("[]")
+  strategicDirection   String
+  isApproved           Boolean   @default(false)
+  approvedAt           DateTime?
+  provider             String    @default("heuristic")
+  model                String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  project              Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, projectId, isApproved])
+  @@map("brand_positionings")
+}
+
+model BrandNamingCandidate {
+  id                   String   @id @default(cuid())
+  workspaceId          String
+  projectId            String
+  category             String
+  brandName            String
+  meaning              String
+  namingConcept        String
+  pronunciation        String
+  industrySuitability  String
+  audienceSuitability  String
+  personalityAlignment String
+  strengthsJson        String   @default("[]")
+  weaknessesJson       String   @default("[]")
+  similarityNote       String?
+  domainCheckStatus    String   @default("EXTERNAL_PROVIDER_NOT_CONFIGURED")
+  isFavorite           Boolean  @default(false)
+  isApproved           Boolean  @default(false)
+  disclaimer           String   @default("Advisory naming candidate only. Does not verify trademark availability or legal clearance.")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  project              Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, projectId])
+  @@map("brand_naming_candidates")
+}
+
+model BrandTaglineCandidate {
+  id                   String   @id @default(cuid())
+  workspaceId          String
+  projectId            String
+  tagline              String
+  meaning              String
+  tone                 String
+  audienceSuitability  String
+  positioningAlignment String
+  isFavorite           Boolean  @default(false)
+  isApproved           Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  project              Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, projectId])
+  @@map("brand_tagline_candidates")
+}
+
+model BrandStrategyReport {
+  id           String    @id @default(cuid())
+  workspaceId  String
+  projectId    String
+  title        String
+  version      Int       @default(1)
+  sectionsJson String    @default("[]") // 22-section professional strategy report
+  isApproved   Boolean   @default(false)
+  approvedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  project      Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  versions     StrategyVersion[]
+
+  @@index([workspaceId, projectId])
+  @@map("brand_strategy_reports")
+}
+
+model StrategyRecommendation {
+  id          String   @id @default(cuid())
+  workspaceId String
+  projectId   String
+  category    String
+  title       String
+  rationale   String
+  priority    String   @default("MEDIUM")
+  status      String   @default("PENDING") // PENDING | ACCEPTED | REJECTED
+  createdAt   DateTime @default(now())
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, projectId])
+  @@map("strategy_recommendations")
+}
+
+model StrategyVersion {
+  id           String   @id @default(cuid())
+  reportId     String
+  version      Int
+  snapshotJson String
+  changeNote   String?
+  createdAt    DateTime @default(now())
+
+  report       BrandStrategyReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@unique([reportId, version])
+  @@map("strategy_versions")
+}
+
+// ==========================================
+// PHASE 11: AI Marketing & Brand Growth Studio
+// ==========================================
+
+model MarketingProject {
+  id               String    @id @default(cuid())
+  workspaceId      String
+  projectId        String
+  userId           String?
+  name             String
+  goal             String?
+  mode             String    @default("AUTOMATIC") // AUTOMATIC | SEMI_AUTOMATIC | MANUAL
+  timezone         String    @default("Asia/Jakarta")
+  status           String    @default("ACTIVE") // ACTIVE | PAUSED | COMPLETED | ARCHIVED
+  provider         String    @default("heuristic")
+  model            String?
+  deletedAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  project          Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  strategies       MarketingStrategy[]
+  campaigns        MarketingCampaign[]
+  calendars        ContentCalendar[]
+
+  @@index([workspaceId, projectId, deletedAt])
+  @@map("marketing_projects")
+}
+
+model MarketingStrategy {
+  id                   String    @id @default(cuid())
+  workspaceId          String
+  projectId            String
+  marketingProjectId   String?
+  title                String
+  mode                 String    @default("AUTOMATIC")
+  objectivesJson       String    @default("[]")
+  funnelPlanJson       String    @default("{}")
+  channelMixJson       String    @default("[]")
+  messagingPillarsJson String    @default("[]")
+  kpiTargetsJson       String    @default("[]")
+  budgetAllocationJson String    @default("{}")
+  isApproved           Boolean   @default(false)
+  approvedAt           DateTime?
+  provider             String    @default("heuristic")
+  model                String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  project              Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  marketingProject     MarketingProject? @relation(fields: [marketingProjectId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, projectId])
+  @@map("marketing_strategies")
+}
+
+model MarketingCampaign {
+  id                 String    @id @default(cuid())
+  workspaceId        String
+  projectId          String
+  marketingProjectId String?
+  name               String
+  objective          String
+  mode               String    @default("AUTOMATIC")
+  stage              Int       @default(1) // 1..14 workflow stages
+  status             String    @default("DRAFT") // DRAFT | IN_PROGRESS | WAITING_APPROVAL | APPROVED | ACTIVE | PAUSED | COMPLETED
+  startDate          DateTime?
+  endDate            DateTime?
+  budgetCents        Int       @default(0)
+  currency           String    @default("USD")
+  workflowStateJson  String    @default("{}")
+  exportPath         String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  project            Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  marketingProject   MarketingProject?  @relation(fields: [marketingProjectId], references: [id], onDelete: SetNull)
+  channels           CampaignChannel[]
+  contents           MarketingContent[]
+  approvals          CampaignApproval[]
+  adCampaigns        AdCampaign[]
+
+  @@index([workspaceId, projectId, status])
+  @@map("marketing_campaigns")
+}
+
+model CampaignChannel {
+  id          String   @id @default(cuid())
+  workspaceId String
+  campaignId  String
+  platform    String   // INSTAGRAM | FACEBOOK | TIKTOK | YOUTUBE | LINKEDIN | X_TWITTER | GOOGLE_ADS | META_ADS
+  role        String   @default("PRIMARY") // PRIMARY | SECONDARY | RETARGETING
+  budgetShare Float    @default(0)
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  campaign    MarketingCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, campaignId])
+  @@map("campaign_channels")
+}
+
+model ContentPillar {
+  id          String   @id @default(cuid())
+  workspaceId String
+  projectId   String
+  name        String
+  description String
+  ratioPct    Int      @default(25)
+  anglesJson  String   @default("[]")
+  createdAt   DateTime @default(now())
+
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  ideas       ContentIdea[]
+
+  @@index([workspaceId, projectId])
+  @@map("content_pillars")
+}
+
+model ContentIdea {
+  id          String   @id @default(cuid())
+  workspaceId String
+  projectId   String
+  pillarId    String?
+  platform    String
+  format      String   // CAROUSEL | REEL | SHORT | POST | THREAD | VIDEO | ARTICLE
+  title       String
+  hook        String
+  angle       String
+  status      String   @default("IDEA") // IDEA | SELECTED | IN_PRODUCTION | ARCHIVED
+  createdAt   DateTime @default(now())
+
+  project     Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  pillar      ContentPillar? @relation(fields: [pillarId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, projectId])
+  @@map("content_ideas")
+}
+
+model MarketingContent {
+  id           String    @id @default(cuid())
+  workspaceId  String
+  projectId    String
+  campaignId   String?
+  platform     String
+  contentType  String    // SOCIAL_POST | AD_COPY | EMAIL | SCRIPT | BLOG | HOOK | CTA
+  title        String
+  caption      String
+  hook         String?
+  cta          String?
+  hashtagsJson String    @default("[]")
+  visualPrompt String?
+  status       String    @default("DRAFT") // DRAFT | REVIEW | APPROVED | SCHEDULED | PUBLISHED
+  isApproved   Boolean   @default(false)
+  approvedAt   DateTime?
+  provider     String    @default("heuristic")
+  model        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  project        Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  campaign       MarketingCampaign?    @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  variants       ContentVariant[]
+  assets         ContentAsset[]
+  scheduleItems  ContentScheduleItem[]
+  publishingJobs PublishingJob[]
+
+  @@index([workspaceId, projectId, platform])
+  @@map("marketing_contents")
+}
+
+model ContentVariant {
+  id          String   @id @default(cuid())
+  workspaceId String
+  contentId   String
+  label       String   // A | B | C
+  headline    String?
+  body        String
+  cta         String?
+  tone        String?
+  isWinner    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  content     MarketingContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, contentId])
+  @@map("content_variants")
+}
+
+model ContentAsset {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  contentId    String
+  brandAssetId String?
+  assetType    String   // IMAGE | CAROUSEL_SLIDE | VIDEO_THUMB | BANNER
+  storagePath  String
+  mimeType     String
+  width        Int?
+  height       Int?
+  createdAt    DateTime @default(now())
+
+  content      MarketingContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, contentId])
+  @@map("content_assets")
+}
+
+model ContentCalendar {
+  id                 String   @id @default(cuid())
+  workspaceId        String
+  projectId          String
+  marketingProjectId String?
+  name               String
+  timezone           String   @default("Asia/Jakarta")
+  viewMode           String   @default("MONTHLY") // DAILY | WEEKLY | MONTHLY | CAMPAIGN
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  project            Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  marketingProject   MarketingProject?     @relation(fields: [marketingProjectId], references: [id], onDelete: SetNull)
+  items              ContentScheduleItem[]
+
+  @@index([workspaceId, projectId])
+  @@map("content_calendars")
+}
+
+model ContentScheduleItem {
+  id          String   @id @default(cuid())
+  workspaceId String
+  calendarId  String
+  contentId   String?
+  title       String
+  platform    String
+  scheduledAt DateTime
+  timezone    String   @default("Asia/Jakarta")
+  status      String   @default("SCHEDULED") // SCHEDULED | QUEUED | PUBLISHED | FAILED | CANCELLED
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  calendar    ContentCalendar   @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+  content     MarketingContent? @relation(fields: [contentId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, calendarId, scheduledAt])
+  @@map("content_schedule_items")
+}
+
+model PublishingAccount {
+  id                String   @id @default(cuid())
+  workspaceId       String
+  projectId         String
+  connectionId      String?
+  platform          String
+  accountName       String
+  externalAccountId String?
+  status            String   @default("NOT_CONNECTED") // NOT_CONNECTED | CONNECTED | REVOKED | ERROR
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  project           Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  connection        PlatformConnection? @relation(fields: [connectionId], references: [id], onDelete: SetNull)
+  jobs              PublishingJob[]
+
+  @@index([workspaceId, projectId])
+  @@map("publishing_accounts")
+}
+
+model PublishingJob {
+  id                String    @id @default(cuid())
+  workspaceId       String
+  projectId         String
+  contentId         String?
+  accountId         String?
+  platform          String
+  idempotencyKey    String    @unique
+  status            String    @default("PENDING_APPROVAL") // PENDING_APPROVAL | PREFLIGHT_FAILED | QUEUED | DISPATCHED | CONFIRMED_PUBLISHED | FAILED | CANCELLED
+  preflightJson     String    @default("{}")
+  externalPostId    String?
+  platformConfirmed Boolean   @default(false)
+  errorMessage      String?
+  scheduledFor      DateTime?
+  dispatchedAt      DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  project           Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  content           MarketingContent?  @relation(fields: [contentId], references: [id], onDelete: SetNull)
+  account           PublishingAccount? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, projectId, status])
+  @@map("publishing_jobs")
+}
+
+model AdCampaign {
+  id                  String   @id @default(cuid())
+  workspaceId         String
+  projectId           String
+  marketingCampaignId String?
+  platform            String   // META_ADS | GOOGLE_ADS | TIKTOK_ADS | YOUTUBE_ADS | LINKEDIN_ADS
+  name                String
+  objective           String   // AWARENESS | TRAFFIC | LEADS | CONVERSIONS
+  dailyBudgetCents    Int      @default(0)
+  durationDays        Int      @default(14)
+  currency            String   @default("USD")
+  targetingJson       String   @default("{}")
+  budgetEstimateJson  String   @default("{}") // Explicit assumptions, never promises ROI
+  status              String   @default("DRAFT")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  project             Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  marketingCampaign   MarketingCampaign? @relation(fields: [marketingCampaignId], references: [id], onDelete: SetNull)
+  creatives           AdCreative[]
+
+  @@index([workspaceId, projectId])
+  @@map("ad_campaigns")
+}
+
+model AdCreative {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  adCampaignId String
+  format       String   // SINGLE_IMAGE | CAROUSEL | VIDEO | SEARCH_TEXT
+  headline     String
+  primaryText  String
+  description  String?
+  cta          String
+  variantLabel String   @default("A")
+  assetPath    String?
+  createdAt    DateTime @default(now())
+
+  adCampaign   AdCampaign @relation(fields: [adCampaignId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, adCampaignId])
+  @@map("ad_creatives")
+}
+
+model LandingPage {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  projectId    String
+  title        String
+  slug         String
+  sectionsJson String   @default("[]")
+  htmlContent  String
+  cssContent   String
+  jsContent    String   @default("")
+  isSanitized  Boolean  @default(true)
+  isPublished  Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, projectId])
+  @@map("landing_pages")
+}
+
+model MarketingAnalytics {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  projectId    String
+  platform     String
+  periodDate   DateTime
+  impressions  Int      @default(0)
+  reach        Int      @default(0)
+  clicks       Int      @default(0)
+  engagements  Int      @default(0)
+  conversions  Int      @default(0)
+  spendCents   Int      @default(0)
+  revenueCents Int      @default(0)
+  ctr          Float    @default(0)
+  cpcCents     Float    @default(0)
+  dataSource   String   @default("MANUAL") // MANUAL | CSV_IMPORT | PLATFORM_SYNC
+  createdAt    DateTime @default(now())
+
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, projectId, periodDate])
+  @@map("marketing_analytics")
+}
+
+model MarketingReport {
+  id                 String   @id @default(cuid())
+  workspaceId        String
+  projectId          String
+  title              String
+  periodLabel        String
+  actualSummaryJson  String   @default("{}")
+  calculatedKpisJson String   @default("{}")
+  aiInsightsJson     String   @default("[]")
+  provider           String   @default("heuristic")
+  model              String?
+  createdAt          DateTime @default(now())
+
+  project            Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, projectId])
+  @@map("marketing_reports")
+}
+
+model MarketingRecommendation {
+  id          String   @id @default(cuid())
+  workspaceId String
+  projectId   String
+  category    String   // CONTENT | TIMING | AD_BUDGET | CHANNEL_MIX | COPY
+  title       String
+  rationale   String
+  priority    String   @default("MEDIUM")
+  status      String   @default("PENDING") // PENDING | ACCEPTED | REJECTED
+  createdAt   DateTime @default(now())
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, projectId])
+  @@map("marketing_recommendations")
+}
+
+model PlatformConnection {
+  id                 String    @id @default(cuid())
+  workspaceId        String
+  projectId          String
+  platform           String
+  displayName        String
+  status             String    @default("NOT_CONNECTED") // NOT_CONNECTED | PENDING_OAUTH | CONNECTED | TOKEN_EXPIRED | REVOKED | NOT_SUPPORTED
+  oauthState         String?
+  encryptedToken     String?
+  encryptedRefresh   String?
+  tokenIv            String?
+  tokenAuthTag       String?
+  capabilitiesJson   String    @default("{}")
+  lastSyncedAt       DateTime?
+  revokedAt          DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  project            Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  permissions        PlatformPermission[]
+  publishingAccounts PublishingAccount[]
+
+  @@index([workspaceId, projectId, platform])
+  @@map("platform_connections")
+}
+
+model PlatformPermission {
+  id           String   @id @default(cuid())
+  connectionId String
+  scope        String
+  granted      Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  connection   PlatformConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@index([connectionId])
+  @@map("platform_permissions")
+}
+
+model CampaignApproval {
+  id          String    @id @default(cuid())
+  workspaceId String
+  campaignId  String
+  stage       Int
+  status      String    @default("PENDING") // PENDING | APPROVED | REJECTED | REVISION_REQUESTED
+  reviewerId  String?
+  comment     String?
+  decidedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  campaign    MarketingCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, campaignId])
+  @@map("campaign_approvals")
+}
+
+// ==========================================
+// PHASE 12: AI Brand Video & Motion Studio
+// ==========================================
+
+model VideoProject {
+  id          String    @id @default(cuid())
+  workspaceId String
+  projectId   String
+  userId      String?
+  title       String
+  templateKey String?   // 12 brand video templates
+  mode        String    @default("AUTOMATIC") // AUTOMATIC | SEMI_AUTOMATIC | MANUAL
+  aspectRatio String    @default("16:9") // 16:9 | 9:16 | 1:1 | 4:5
+  durationSec Int       @default(15)
+  status      String    @default("DRAFT") // DRAFT | IN_PROGRESS | WAITING_APPROVAL | RENDERED | APPROVED
+  provider    String    @default("local-ffmpeg")
+  model       String?
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  project     Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  scripts     VideoScript[]
+  storyboards VideoStoryboard[]
+  jobs        VideoGenerationJob[]
+  timelines   VideoTimeline[]
+  renderJobs  VideoRenderJob[]
+  versions    VideoVersion[]
+  qcReports   VideoQualityReport[]
+
+  @@index([workspaceId, projectId, deletedAt])
+  @@map("video_projects")
+}
+
+model VideoScript {
+  id             String   @id @default(cuid())
+  workspaceId    String
+  projectId      String
+  videoProjectId String
+  title          String
+  language       String   @default("id-ID")
+  narrationText  String
+  hook           String?
+  cta            String?
+  durationEstSec Int      @default(15)
+  isApproved     Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  project        Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  videoProject   VideoProject @relation(fields: [videoProjectId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, projectId])
+  @@map("video_scripts")
+}
+
+model VideoStoryboard {
+  id             String   @id @default(cuid())
+  workspaceId    String
+  projectId      String
+  videoProjectId String
+  title          String
+  isApproved     Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  project        Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  videoProject   VideoProject @relation(fields: [videoProjectId], references: [id], onDelete: Cascade)
+  scenes         VideoScene[]
+
+  @@index([workspaceId, projectId])
+  @@map("video_storyboards")
+}
+
+model VideoScene {
+  id            String   @id @default(cuid())
+  storyboardId  String
+  sceneOrder    Int
+  title         String
+  visualPrompt  String
+  narrationLine String?
+  durationSec   Float    @default(3.0)
+  motionStyle   String   @default("SMOOTH_PAN")
+  createdAt     DateTime @default(now())
+
+  storyboard    VideoStoryboard @relation(fields: [storyboardId], references: [id], onDelete: Cascade)
+  shots         VideoShot[]
+
+  @@index([storyboardId, sceneOrder])
+  @@map("video_scenes")
+}
+
+model VideoShot {
+  id          String   @id @default(cuid())
+  sceneId     String
+  shotOrder   Int
+  cameraMove  String   @default("STATIC")
+  framing     String   @default("MEDIUM")
+  durationSec Float    @default(3.0)
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  scene       VideoScene @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+
+  @@index([sceneId, shotOrder])
+  @@map("video_shots")
+}
+
+model VideoGenerationJob {
+  id             String    @id @default(cuid())
+  workspaceId    String
+  projectId      String
+  videoProjectId String?
+  jobType        String    // TEXT_TO_VIDEO | IMAGE_TO_VIDEO | REF_TO_VIDEO | LOGO_ANIMATION
+  provider       String    @default("local-ffmpeg")
+  model          String?
+  prompt         String
+  paramsJson     String    @default("{}")
+  status         String    @default("QUEUED") // QUEUED | RUNNING | COMPLETED | FAILED | CANCELLED
+  progress       Int       @default(0)
+  outputAssetId  String?
+  errorMessage   String?
+  createdAt      DateTime  @default(now())
+  completedAt    DateTime?
+
+  project        Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  videoProject   VideoProject? @relation(fields: [videoProjectId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, projectId, status])
+  @@map("video_generation_jobs")
+}
+
+model VideoAsset {
+  id              String   @id @default(cuid())
+  workspaceId     String
+  projectId       String
+  sourceLogoId    String?
+  assetType       String   // GENERATED_CLIP | LOGO_ANIMATION | B_ROLL | RENDERED_VIDEO
+  title           String
+  storagePath     String
+  mimeType        String   @default("video/mp4")
+  width           Int      @default(1920)
+  height          Int      @default(1080)
+  durationSec     Float    @default(5.0)
+  fps             Int      @default(30)
+  hasAlpha        Boolean  @default(false)
+  preservesLogo   Boolean  @default(true)
+  provider        String   @default("local-ffmpeg")
+  createdAt       DateTime @default(now())
+
+  project         Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  clips           VideoClip[]
+
+  @@index([workspaceId, projectId])
+  @@map("video_assets")
+}
+
+model VideoTimeline {
+  id             String   @id @default(cuid())
+  workspaceId    String
+  projectId      String
+  videoProjectId String
+  title          String
+  fps            Int      @default(30)
+  width          Int      @default(1920)
+  height         Int      @default(1080)
+  durationSec    Float    @default(15.0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  project        Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  videoProject   VideoProject      @relation(fields: [videoProjectId], references: [id], onDelete: Cascade)
+  tracks         VideoTrack[]
+  transitions    VideoTransition[]
+  overlays       VideoTextOverlay[]
+  subtitles      VideoSubtitle[]
+
+  @@index([workspaceId, projectId])
+  @@map("video_timelines")
+}
+
+model VideoTrack {
+  id         String   @id @default(cuid())
+  timelineId String
+  trackType  String   // VIDEO | AUDIO | TEXT | SUBTITLE | LOGO
+  name       String
+  orderIndex Int      @default(0)
+  isMuted    Boolean  @default(false)
+  isLocked   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  timeline   VideoTimeline @relation(fields: [timelineId], references: [id], onDelete: Cascade)
+  clips      VideoClip[]
+
+  @@index([timelineId, orderIndex])
+  @@map("video_tracks")
+}
+
+model VideoClip {
+  id          String   @id @default(cuid())
+  trackId     String
+  assetId     String?
+  audioId     String?
+  label       String
+  startSec    Float    @default(0)
+  durationSec Float    @default(5)
+  trimInSec   Float    @default(0)
+  trimOutSec  Float?   
+  volume      Float    @default(1.0)
+  transformJson String @default("{}")
+  createdAt   DateTime @default(now())
+
+  track       VideoTrack       @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  asset       VideoAsset?      @relation(fields: [assetId], references: [id], onDelete: SetNull)
+  audio       VideoAudioAsset? @relation(fields: [audioId], references: [id], onDelete: SetNull)
+
+  @@index([trackId, startSec])
+  @@map("video_clips")
+}
+
+model VideoTransition {
+  id             String   @id @default(cuid())
+  timelineId     String
+  transitionType String   // FADE | DISSOLVE | WIPE_LEFT | ZOOM_IN
+  atSec          Float
+  durationSec    Float    @default(0.5)
+  createdAt      DateTime @default(now())
+
+  timeline       VideoTimeline @relation(fields: [timelineId], references: [id], onDelete: Cascade)
+
+  @@index([timelineId])
+  @@map("video_transitions")
+}
+
+model VideoTextOverlay {
+  id          String   @id @default(cuid())
+  timelineId  String
+  text        String
+  fontFamily  String   @default("Inter")
+  fontSize    Int      @default(48)
+  colorHex    String   @default("#FFFFFF")
+  startSec    Float    @default(0)
+  durationSec Float    @default(3)
+  positionJson String  @default("{\"x\":0.5,\"y\":0.8}")
+  createdAt   DateTime @default(now())
+
+  timeline    VideoTimeline @relation(fields: [timelineId], references: [id], onDelete: Cascade)
+
+  @@index([timelineId])
+  @@map("video_text_overlays")
+}
+
+model VideoAudioAsset {
+  id          String   @id @default(cuid())
+  workspaceId String
+  projectId   String
+  voiceProfileId String?
+  audioType   String   // VOICEOVER | BGM | SFX
+  title       String
+  language    String   @default("id-ID")
+  storagePath String
+  mimeType    String   @default("audio/wav")
+  durationSec Float    @default(5.0)
+  provider    String   @default("local-tts")
+  createdAt   DateTime @default(now())
+
+  project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  voiceProfile VoiceProfile? @relation(fields: [voiceProfileId], references: [id], onDelete: SetNull)
+  clips        VideoClip[]
+
+  @@index([workspaceId, projectId])
+  @@map("video_audio_assets")
+}
+
+model VoiceProfile {
+  id             String   @id @default(cuid())
+  workspaceId    String
+  projectId      String
+  name           String
+  language       String   @default("id-ID")
+  gender         String?  
+  consentGranted Boolean  @default(false)
+  consentNote    String?
+  provider       String   @default("local-tts")
+  createdAt      DateTime @default(now())
+
+  project        Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  audioAssets    VideoAudioAsset[]
+
+  @@index([workspaceId, projectId])
+  @@map("voice_profiles")
+}
+
+model VideoSubtitle {
+  id         String   @id @default(cuid())
+  timelineId String
+  language   String   @default("id-ID")
+  format     String   @default("SRT") // SRT | VTT
+  content    String
+  createdAt  DateTime @default(now())
+
+  timeline   VideoTimeline @relation(fields: [timelineId], references: [id], onDelete: Cascade)
+
+  @@index([timelineId])
+  @@map("video_subtitles")
+}
+
+model VideoRenderJob {
+  id              String    @id @default(cuid())
+  workspaceId     String
+  projectId       String
+  videoProjectId  String
+  profileId       String?
+  format          String    @default("MP4") // MP4 | WEBM
+  aspectRatio     String    @default("16:9")
+  width           Int       @default(1920)
+  height          Int       @default(1080)
+  supportsAlpha   Boolean   @default(false) // Never claim alpha on standard MP4
+  status          String    @default("QUEUED") // QUEUED | RENDERING | COMPLETED | FAILED
+  progress        Int       @default(0)
+  outputPath      String?
+  editableBundlePath String?
+  errorMessage    String?
+  createdAt       DateTime  @default(now())
+  completedAt     DateTime?
+
+  project         Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  videoProject    VideoProject        @relation(fields: [videoProjectId], references: [id], onDelete: Cascade)
+  profile         VideoExportProfile? @relation(fields: [profileId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, projectId, status])
+  @@map("video_render_jobs")
+}
+
+model VideoVersion {
+  id             String   @id @default(cuid())
+  videoProjectId String
+  version        Int
+  snapshotJson   String
+  changeNote     String?
+  createdAt      DateTime @default(now())
+
+  videoProject   VideoProject @relation(fields: [videoProjectId], references: [id], onDelete: Cascade)
+
+  @@unique([videoProjectId, version])
+  @@map("video_versions")
+}
+
+model VideoExportProfile {
+  id          String   @id @default(cuid())
+  workspaceId String
+  projectId   String
+  name        String
+  aspectRatio String   // 16:9 | 9:16 | 1:1 | 4:5
+  width       Int
+  height      Int
+  fps         Int      @default(30)
+  format      String   @default("MP4")
+  createdAt   DateTime @default(now())
+
+  project     Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  renderJobs  VideoRenderJob[]
+
+  @@index([workspaceId, projectId])
+  @@map("video_export_profiles")
+}
+
+model VideoQualityReport {
+  id             String   @id @default(cuid())
+  workspaceId    String
+  projectId      String
+  videoProjectId String
+  overallScore   Int
+  passed         Boolean
+  checksJson     String   @default("[]")
+  disclaimer     String   @default("Automated video quality checks verify technical brand/format rules and do not guarantee campaign performance.")
+  createdAt      DateTime @default(now())
+
+  project        Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  videoProject   VideoProject @relation(fields: [videoProjectId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, projectId])
+  @@map("video_quality_reports")
+}

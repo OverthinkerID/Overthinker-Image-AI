@@ -1,0 +1,21 @@
+FROM node:20-slim AS base
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ffmpeg ca-certificates && rm -rf /var/lib/apt/lists/*
+
+COPY package.json package-lock.json ./
+COPY apps/api/package.json ./apps/api/
+COPY apps/web/package.json ./apps/web/
+RUN npm ci --omit=dev --workspace=apps/api --include-workspace-root
+
+COPY apps/api ./apps/api
+RUN npx --workspace=apps/api prisma generate && npm run build --workspace=apps/api
+
+RUN mkdir -p /app/data /app/storage
+ENV NODE_ENV=production
+ENV PORT=4000
+ENV DATABASE_URL="file:/app/data/dev.db"
+ENV STORAGE_ROOT="/app/storage"
+
+EXPOSE 4000
+CMD ["sh", "-c", "cd apps/api && npx prisma migrate deploy && node dist/index.js"]

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="120" viewBox="0 0 520 120" fill="none">
+  <rect width="520" height="120" rx="20" fill="#141812"/>
+  <rect x="2" y="2" width="516" height="116" rx="18" stroke="#394F29" stroke-width="2"/>
+  <rect x="24" y="24" width="72" height="72" rx="18" fill="#394F29"/>
+  <path d="M44 48L60 38L76 48V72L60 82L44 72V48Z" stroke="#A7D487" stroke-width="3" stroke-linejoin="round"/>
+  <circle cx="60" cy="60" r="8" fill="#A7D487"/>
+  <text x="116" y="56" fill="#F4F7F1" font-family="Plus Jakarta Sans, Inter, system-ui, sans-serif" font-size="26" font-weight="700" letter-spacing="-0.5">OIA – Overthinker Image AI</text>
+  <text x="116" y="82" fill="#A7D487" font-family="Plus Jakarta Sans, Inter, system-ui, sans-serif" font-size="14" font-weight="500">AI Brand Identity, Design, Strategy, Marketing &amp; Motion Studio · v1.0.0</text>
+</svg>
